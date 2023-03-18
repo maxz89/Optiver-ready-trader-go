@@ -140,7 +140,7 @@ class AutoTrader(BaseAutoTrader):
             # self.last_future_order_book[0], self.last_future_order_book[1] = bid_prices, ask_prices
 
             if self.event_loop.time() - self.time_of_last_hedged > 59:
-                volume = abs(self.position)
+                volume = abs(self.position) - 10
                 if self.position > 0:
                     self.send_hedge_order(next(self.order_ids), Side.ASK, MIN_BID_NEAREST_TICK, volume)
                     self.send_hedge_order(next(self.order_ids), Side.BID, MAX_ASK_NEAREST_TICK, volume)
