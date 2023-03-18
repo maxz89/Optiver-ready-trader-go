@@ -154,62 +154,24 @@ class AutoTrader(BaseAutoTrader):
 
             
             # placing market making orders
-            if new_bid_price != 0 and self.position + LOT_SIZE + outstanding_bids_size < POSITION_LIMIT and send_new_bid:
+            if new_bid_price != 0 and self.position + outstanding_bids_size < POSITION_LIMIT - 1 and send_new_bid:
                 self.bid_id = next(self.order_ids)
                 self.bid_price = new_bid_price
-                self.send_insert_order(self.bid_id, Side.BUY, new_bid_price, LOT_SIZE, Lifespan.GOOD_FOR_DAY)
-                self.logger.info("sent mm bid with id %d and price %d and volume %d", self.bid_id, self.bid_price, LOT_SIZE)
+                volume = min(LOT_SIZE, 99 - self.position)
+                self.send_insert_order(self.bid_id, Side.BUY, new_bid_price, volume, Lifespan.GOOD_FOR_DAY)
+                self.logger.info("sent mm bid with id %d and price %d and volume %d", self.bid_id, self.bid_price, volume)
                 # self.logger.info("current outstanding bid size %d", outstanding_bids_size)
-                self.bids[self.bid_id] = [self.bid_price, LOT_SIZE]
+                self.bids[self.bid_id] = [self.bid_price, volume]
 
-            if new_ask_price != 0 and self.position - LOT_SIZE - outstanding_asks_size > -POSITION_LIMIT and send_new_ask:
+            if new_ask_price != 0 and self.position - outstanding_asks_size > -POSITION_LIMIT + 1 and send_new_ask:
                 self.ask_id = next(self.order_ids)
                 self.ask_price = new_ask_price
-                    
-                self.send_insert_order(self.ask_id, Side.SELL, new_ask_price, LOT_SIZE, Lifespan.GOOD_FOR_DAY)
-                self.logger.info("sent mm ask with id %d and price %d and volume %d", self.ask_id, self.ask_price, LOT_SIZE)
+                volume = min(LOT_SIZE, 99 + self.position)
+                self.send_insert_order(self.ask_id, Side.SELL, new_ask_price, volume, Lifespan.GOOD_FOR_DAY)
+                self.logger.info("sent mm ask with id %d and price %d and volume %d", self.ask_id, self.ask_price, volume)
                 # self.logger.info("current outstanding ask size %d", outstanding_asks_size)
-                self.asks[self.ask_id] = [self.ask_price, LOT_SIZE]
+                self.asks[self.ask_id] = [self.ask_price, volume]
         
-        # pair trading
-        # if instrument == Instrument.ETF:
-        #     future_mid_price = (self.last_future_order_book[1][0] + self.last_future_order_book[0][0]) // 2
-        #     etf_mid_price = (ask_prices[0] + bid_prices[0]) // 2
-        #     deviation = future_mid_price - etf_mid_price
-        #     self.logger.info("future mid price %d, etf mid price %d, deviation %d", future_mid_price, etf_mid_price, deviation)
-
-        #     volume = abs(deviation) // 25
-        #     if deviation > 2 * TICK_SIZE_IN_CENTS:
-        #         if bid_prices[0] != 0 and self.position + volume + outstanding_bids_size < POSITION_LIMIT:
-        #             self.bid_id = next(self.order_ids)
-        #             self.logger.info("sending pt bid with id %d and price %d and volume %d", self.bid_id, ask_prices[0], volume)
-        #             self.send_insert_order(self.bid_id, Side.BUY, ask_prices[0], volume, Lifespan.GOOD_FOR_DAY)
-        #             # self.logger.info("current outstanding bid size %d", outstanding_bids_size)
-        #             self.bids[self.bid_id] = [self.bid_price, volume]
-        #     elif deviation < -2 * TICK_SIZE_IN_CENTS:
-        #         if ask_prices[0] != 0 and self.position - volume - outstanding_asks_size > -POSITION_LIMIT:
-        #             self.ask_id = next(self.order_ids)
-        #             self.logger.info("sending pt ask with id %d and price %d and volume %d", self.ask_id, bid_prices[0], volume)
-        #             self.send_insert_order(self.ask_id, Side.SELL, bid_prices[0], volume, Lifespan.GOOD_FOR_DAY)
-        #             # self.logger.info("current outstanding ask size %d", outstanding_asks_size)
-        #             self.asks[self.ask_id] = [self.ask_price, volume]
-        #     # liquidate if etf and future prices align - not good
-            # if deviation == 0:
-            #     if self.position > 0:
-            #         if ask_prices[0] != 0:
-            #             self.ask_id = next(self.order_ids)
-            #             self.logger.info("sending pt ask with id %d and price %d and volume %d", self.ask_id, bid_prices[0], self.position)
-            #             self.send_insert_order(self.ask_id, Side.SELL, bid_prices[0], self.position, Lifespan.GOOD_FOR_DAY)
-            #             # self.logger.info("current outstanding ask size %d", outstanding_asks_size)
-            #             self.asks[self.ask_id] = [self.ask_price, self.position]
-            #     elif self.position < 0:
-            #         if bid_prices[0] != 0:
-            #             self.bid_id = next(self.order_ids)
-            #             self.logger.info("sending pt bid with id %d and price %d and volume %d", self.bid_id, ask_prices[0], self.position)
-            #             self.send_insert_order(self.bid_id, Side.BUY, ask_prices[0], -1 * self.position, Lifespan.GOOD_FOR_DAY)
-            #             # self.logger.info("current outstanding bid size %d", outstanding_bids_size)
-            #             self.bids[self.bid_id] = [self.bid_price, self.position]
-                
 
     def on_order_filled_message(self, client_order_id: int, price: int, volume: int) -> None:
         """Called when one of your orders is filled, partially or fully.
