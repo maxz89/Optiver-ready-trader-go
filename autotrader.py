@@ -113,7 +113,7 @@ class AutoTrader(BaseAutoTrader):
             # new_bid_price = mid_price - 1 * TICK_SIZE_IN_CENTS if bid_prices[0] != 0 else 0
             # new_ask_price = mid_price + 1 * TICK_SIZE_IN_CENTS if ask_prices[0] != 0 else 0
 
-            if abs(self.position + self.hedge_position) <= 10:
+            if abs(self.position) <= 10:
                 self.time_of_last_hedged = self.event_loop.time()
 
             new_bid_price = bid_prices[0] - 3 * TICK_SIZE_IN_CENTS if bid_prices[0] != 0 else 0
@@ -140,16 +140,16 @@ class AutoTrader(BaseAutoTrader):
             # self.last_future_order_book[0], self.last_future_order_book[1] = bid_prices, ask_prices
 
             if self.event_loop.time() - self.time_of_last_hedged > 59:
-                volume = abs(self.position + self.hedge_position)
+                volume = abs(self.position)
                 if self.position > 0:
                     self.send_hedge_order(next(self.order_ids), Side.ASK, MIN_BID_NEAREST_TICK, volume)
-                    # self.logger.info("sent hedge of volume %d", -volume)
-                    self.hedge_position -= volume
+                    self.send_hedge_order(next(self.order_ids), Side.BID, MAX_ASK_NEAREST_TICK, volume)
+                    self.logger.info("hedged for positive position of volume %d", volume)
                     self.time_of_last_hedged = self.event_loop.time()
                 else:
                     self.send_hedge_order(next(self.order_ids), Side.BID, MAX_ASK_NEAREST_TICK, volume)
-                    # self.logger.info("sent hedge of volume %d", volume)
-                    self.hedge_position += volume
+                    self.send_hedge_order(next(self.order_ids), Side.ASK, MIN_BID_NEAREST_TICK, volume)
+                    self.logger.info("hedged for positive position of volume %d", volume)
                     self.time_of_last_hedged = self.event_loop.time()
 
             
@@ -227,11 +227,6 @@ class AutoTrader(BaseAutoTrader):
             self.position += volume
             self.bids[client_order_id][1] -= volume
             # self.send_hedge_order(next(self.order_ids), Side.ASK, MIN_BID_NEAREST_TICK, volume)
-            if self.hedge_position > 0:
-                wind_down_amount = min(abs(self.hedge_position), volume)
-                self.send_hedge_order(next(self.order_ids), Side.ASK, MIN_BID_NEAREST_TICK, wind_down_amount)
-                self.logger.info("winding down hedge of volume %d", -wind_down_amount)
-                self.hedge_position -= wind_down_amount
                 # self.time_of_last_hedged = self.event_loop.time()
         elif client_order_id in self.asks:
             # if position swaps signs
@@ -239,11 +234,6 @@ class AutoTrader(BaseAutoTrader):
                 self.time_of_last_hedged = self.event_loop.time()
             self.position -= volume
             self.asks[client_order_id][1] -= volume
-            if self.hedge_position < 0:
-                wind_down_amount = min(abs(self.hedge_position), volume)
-                self.send_hedge_order(next(self.order_ids), Side.BID, MAX_ASK_NEAREST_TICK, wind_down_amount)
-                self.logger.info("winding down hedge of volume %d", wind_down_amount)
-                self.hedge_position += wind_down_amount
                 # self.time_of_last_hedged = self.event_loop.time()
             # self.send_hedge_order(next(self.order_ids), Side.BID, MAX_ASK_NEAREST_TICK, volume)
 
