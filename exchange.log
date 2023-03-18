@@ -10296,3 +10296,50 @@ ConnectionAbortedError: [WinError 10053] An established connection was aborted b
 2023-03-17 18:30:28,508 [INFO   ] [SCORE_BOARD] writer thread complete after processing 3601 score records
 2023-03-17 18:30:28,508 [INFO   ] [MATCH_EVENTS] writer thread complete after processing 321762 match events
 2023-03-17 18:30:28,508 [INFO   ] [APP] closing event loop
+2023-03-18 13:56:41,779 [INFO   ] [APP] exchange started with arguments={rtg.py, run, autotrader.py}
+2023-03-18 13:56:41,779 [INFO   ] [APP] configuration={"Engine":{"MarketDataFile":"data/market_data5.csv","MarketEventInterval":0.05,"MarketOpenDelay":5.0,"MatchEventsFile":"match_events.csv","ScoreBoardFile":"score_board.csv","Speed":1.0,"TickInterval":0.25},"Execution":{"Host":"127.0.0.1","Port":12345},"Fees":{"Maker":-0.0001,"Taker":0.0002},"Hud":{"Host":"127.0.0.1","Port":12347},"Information":{"Type":"mmap","Name":"info.dat"},"Instrument":{"EtfClamp":0.002,"TickSize":1.0},"Limits":{"ActiveOrderCountLimit":10,"ActiveVolumeLimit":200,"MessageFrequencyInterval":1.0,"MessageFrequencyLimit":50,"PositionLimit":100},"Traders":{"TraderOne":"secret","TraderTwo":"secret"}}
+2023-03-18 13:56:41,781 [INFO   ] [CONTROLLER] starting the match
+2023-03-18 13:56:41,781 [INFO   ] [EXECUTION] starting execution server: host=127.0.0.1 port=12345
+2023-03-18 13:56:41,781 [INFO   ] [INFORMATION] starting information publisher: type=mmap name=info.dat
+2023-03-18 13:56:41,781 [INFO   ] [HEADS_UP] starting heads-up display server: host=127.0.0.1 port=12347
+2023-03-18 13:56:41,781 [INFO   ] [INFORMATION] information channel established
+2023-03-18 13:56:41,825 [INFO   ] [CONNECTION] fd=1100 connection established: peer=127.0.0.1:62120
+2023-03-18 13:56:41,825 [INFO   ] [EXECUTION] fd=1100 'TraderOne' is ready!
+2023-03-18 13:56:42,887 [INFO   ] [CONNECTION] fd=1088 connection established: peer=127.0.0.1:62121
+2023-03-18 13:56:46,801 [INFO   ] [CONTROLLER] market open
+2023-03-18 14:11:43,908 [INFO   ] [MARKET_EVENTS] reader thread complete after processing 318316 market events
+2023-03-18 14:11:46,823 [INFO   ] [TIMER] shutting down the match: time=900.015000 reason='match complete'
+2023-03-18 14:11:46,823 [INFO   ] [COMPETITOR] 'TraderOne' closing execution channel at time=900.015000
+2023-03-18 14:11:46,823 [INFO   ] [CONNECTION] fd=1100 connection lost
+2023-03-18 14:11:46,824 [INFO   ] [SCORE_BOARD] writer thread complete after processing 3600 score records
+2023-03-18 14:11:46,874 [INFO   ] [MATCH_EVENTS] writer thread complete after processing 321765 match events
+2023-03-18 14:11:46,874 [INFO   ] [APP] closing event loop
+2023-03-18 14:13:35,722 [INFO   ] [APP] exchange started with arguments={rtg.py, run, autotrader.py}
+2023-03-18 14:13:35,722 [INFO   ] [APP] configuration={"Engine":{"MarketDataFile":"data/market_data1.csv","MarketEventInterval":0.05,"MarketOpenDelay":5.0,"MatchEventsFile":"match_events.csv","ScoreBoardFile":"score_board.csv","Speed":1.0,"TickInterval":0.25},"Execution":{"Host":"127.0.0.1","Port":12345},"Fees":{"Maker":-0.0001,"Taker":0.0002},"Hud":{"Host":"127.0.0.1","Port":12347},"Information":{"Type":"mmap","Name":"info.dat"},"Instrument":{"EtfClamp":0.002,"TickSize":1.0},"Limits":{"ActiveOrderCountLimit":10,"ActiveVolumeLimit":200,"MessageFrequencyInterval":1.0,"MessageFrequencyLimit":50,"PositionLimit":100},"Traders":{"TraderOne":"secret","TraderTwo":"secret"}}
+2023-03-18 14:13:35,722 [INFO   ] [CONTROLLER] starting the match
+2023-03-18 14:13:35,722 [INFO   ] [EXECUTION] starting execution server: host=127.0.0.1 port=12345
+2023-03-18 14:13:35,722 [INFO   ] [INFORMATION] starting information publisher: type=mmap name=info.dat
+2023-03-18 14:13:35,729 [INFO   ] [HEADS_UP] starting heads-up display server: host=127.0.0.1 port=12347
+2023-03-18 14:13:35,729 [INFO   ] [INFORMATION] information channel established
+2023-03-18 14:13:35,760 [INFO   ] [CONNECTION] fd=1088 connection established: peer=127.0.0.1:62825
+2023-03-18 14:13:35,760 [INFO   ] [EXECUTION] fd=1088 'TraderOne' is ready!
+2023-03-18 14:13:36,925 [INFO   ] [CONNECTION] fd=1100 connection established: peer=127.0.0.1:62826
+2023-03-18 14:13:40,763 [INFO   ] [CONTROLLER] market open
+2023-03-18 15:08:38,507 [INFO   ] [APP] exchange started with arguments={rtg.py, run, autotrader.py}
+2023-03-18 15:08:38,507 [INFO   ] [APP] configuration={"Engine":{"MarketDataFile":"data/market_data1.csv","MarketEventInterval":0.05,"MarketOpenDelay":5.0,"MatchEventsFile":"match_events.csv","ScoreBoardFile":"score_board.csv","Speed":1.0,"TickInterval":0.25},"Execution":{"Host":"127.0.0.1","Port":12345},"Fees":{"Maker":-0.0001,"Taker":0.0002},"Hud":{"Host":"127.0.0.1","Port":12347},"Information":{"Type":"mmap","Name":"info.dat"},"Instrument":{"EtfClamp":0.002,"TickSize":1.0},"Limits":{"ActiveOrderCountLimit":10,"ActiveVolumeLimit":200,"MessageFrequencyInterval":1.0,"MessageFrequencyLimit":50,"PositionLimit":100},"Traders":{"TraderOne":"secret","TraderTwo":"secret"}}
+2023-03-18 15:08:38,507 [INFO   ] [CONTROLLER] starting the match
+2023-03-18 15:08:38,507 [INFO   ] [EXECUTION] starting execution server: host=127.0.0.1 port=12345
+2023-03-18 15:08:38,507 [INFO   ] [INFORMATION] starting information publisher: type=mmap name=info.dat
+2023-03-18 15:08:38,507 [INFO   ] [HEADS_UP] starting heads-up display server: host=127.0.0.1 port=12347
+2023-03-18 15:08:38,507 [INFO   ] [INFORMATION] information channel established
+2023-03-18 15:08:38,533 [INFO   ] [CONNECTION] fd=1088 connection established: peer=127.0.0.1:63413
+2023-03-18 15:08:38,533 [INFO   ] [EXECUTION] fd=1088 'TraderOne' is ready!
+2023-03-18 15:08:39,494 [INFO   ] [CONNECTION] fd=1100 connection established: peer=127.0.0.1:63414
+2023-03-18 15:08:43,532 [INFO   ] [CONTROLLER] market open
+2023-03-18 15:23:40,002 [INFO   ] [MARKET_EVENTS] reader thread complete after processing 461484 market events
+2023-03-18 15:23:43,509 [INFO   ] [TIMER] shutting down the match: time=899.969000 reason='match complete'
+2023-03-18 15:23:43,509 [INFO   ] [COMPETITOR] 'TraderOne' closing execution channel at time=899.969000
+2023-03-18 15:23:43,510 [INFO   ] [CONNECTION] fd=1088 connection lost
+2023-03-18 15:23:43,511 [INFO   ] [SCORE_BOARD] writer thread complete after processing 3601 score records
+2023-03-18 15:23:43,511 [INFO   ] [MATCH_EVENTS] writer thread complete after processing 466145 match events
+2023-03-18 15:23:43,512 [INFO   ] [APP] closing event loop
