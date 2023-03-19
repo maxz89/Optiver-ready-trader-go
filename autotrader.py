@@ -48,9 +48,9 @@ class AutoTrader(BaseAutoTrader):
         self.bids = {}
         self.asks = {}
         self.last_future_order_book = [0] * 2
-        self.ask_id = self.ask_price = self.bid_id = self.bid_price = self.position = 0
+        self.position = self.hedge_position = 0
         self.time_of_last_hedged = self.event_loop.time()
-        self.hedge_position = 0
+        
 
     def on_error_message(self, client_order_id: int, error_message: bytes) -> None:
         """Called when the exchange detects an error.
@@ -81,96 +81,80 @@ class AutoTrader(BaseAutoTrader):
         prices are reported along with the volume available at each of those
         price levels.
         """
-        self.logger.info("________")
-        self.logger.info("received order book for instrument %d with sequence number %d", instrument,
-                         sequence_number)
-        self.logger.info("bid prices %s", bid_prices)
-        self.logger.info("bid volumes %s", bid_volumes)
-        self.logger.info("ask prices %s", ask_prices)
-        self.logger.info("ask volumes %s", ask_volumes)
-        self.logger.info("bids %s", self.bids)
-        self.logger.info("asks %s", self.asks)
-        self.logger.info("position %d", self.position)
-        self.logger.info("time %d", self.event_loop.time())
-        self.logger.info("elapsed time unhedged % d", self.event_loop.time() - self.time_of_last_hedged)
-        self.logger.info("hedge position %d", self.hedge_position)
+        # self.logger.info("________")
+        # self.logger.info("received order book for instrument %d with sequence number %d", instrument,
+        #                  sequence_number)
+        # self.logger.info("bid prices %s", bid_prices)
+        # self.logger.info("bid volumes %s", bid_volumes)
+        # self.logger.info("ask prices %s", ask_prices)
+        # self.logger.info("ask volumes %s", ask_volumes)
+        # self.logger.info("bids %s", self.bids)
+        # self.logger.info("asks %s", self.asks)
+        # self.logger.info("position %d", self.position)
+        # self.logger.info("time %d", self.event_loop.time())
+        # self.logger.info("elapsed time unhedged % d", self.event_loop.time() - self.time_of_last_hedged)
+        # self.logger.info("hedge position %d", self.hedge_position)
+
+        bids, asks, position, hedge_position, curr_time = self.bids, self.asks, self.position, self.hedge_position, self.event_loop.time()
 
         outstanding_bids_size, outstanding_asks_size = 0, 0
-        for bid, value in self.bids.items():
+        for bid, value in bids.items():
             outstanding_bids_size += value[1]
-        for ask, value in self.asks.items():
+        for ask, value in asks.items():
             outstanding_asks_size += value[1]
 
 
         if instrument == Instrument.FUTURE:
-            # price_adjustment = - (self.position // LOT_SIZE) * TICK_SIZE_IN_CENTS
-            # mid_price = (ask_prices[0] + bid_prices[0]) // 2
-            # mid_price /= 100
-            # self.logger.info("before round %d", mid_price)
-            # mid_price = int(round(mid_price))
-            # self.logger.info("after round %d", mid_price)
-            # mid_price *= 100
-            # new_bid_price = mid_price - 1 * TICK_SIZE_IN_CENTS if bid_prices[0] != 0 else 0
-            # new_ask_price = mid_price + 1 * TICK_SIZE_IN_CENTS if ask_prices[0] != 0 else 0
-
-            if abs(self.position + self.hedge_position) <= 10:
-                self.time_of_last_hedged = self.event_loop.time()
+            # updating time of last hedge
+            if abs(position + hedge_position) <= 10:
+                self.time_of_last_hedged = curr_time
 
             new_bid_price = bid_prices[0] - 3 * TICK_SIZE_IN_CENTS if bid_prices[0] != 0 else 0
             new_ask_price = ask_prices[0] + 3 * TICK_SIZE_IN_CENTS if ask_prices[0] != 0 else 0
-
             send_new_bid, send_new_ask = True, True
 
             # canceling outstanding orders
-            for k in self.bids:
-                if new_bid_price != self.bids[k][0]:
+            for k in bids:
+                if new_bid_price != bids[k][0]:
                     self.send_cancel_order(k)
                 else:
                     send_new_bid = False
-            for k in self.asks:
-                if new_ask_price != self.asks[k][0]:
+            for k in asks:
+                if new_ask_price != asks[k][0]:
                     self.send_cancel_order(k)
                 else:
                     send_new_ask = False
-            # if self.ask_id != 0 and new_ask_price not in (self.ask_price, 0):
-            #     self.send_cancel_order(self.ask_id)
-            #     self.ask_id = 0
 
-            # setting last future order book
-            # self.last_future_order_book[0], self.last_future_order_book[1] = bid_prices, ask_prices
-
-            if self.event_loop.time() - self.time_of_last_hedged > 59:
-                volume = abs(self.position + self.hedge_position)
-                if self.position > 0:
+            if curr_time - self.time_of_last_hedged > 59:
+                volume = abs(position + hedge_position)
+                if position > 0:
                     self.send_hedge_order(next(self.order_ids), Side.ASK, MIN_BID_NEAREST_TICK, volume)
                     # self.logger.info("sent hedge of volume %d", -volume)
                     self.hedge_position -= volume
-                    self.time_of_last_hedged = self.event_loop.time()
+                    self.time_of_last_hedged = curr_time
                 else:
                     self.send_hedge_order(next(self.order_ids), Side.BID, MAX_ASK_NEAREST_TICK, volume)
                     # self.logger.info("sent hedge of volume %d", volume)
                     self.hedge_position += volume
-                    self.time_of_last_hedged = self.event_loop.time()
+                    self.time_of_last_hedged = curr_time
 
             
             # placing market making orders
-            if new_bid_price != 0 and self.position + outstanding_bids_size < POSITION_LIMIT - 1 and send_new_bid:
-                self.bid_id = next(self.order_ids)
-                self.bid_price = new_bid_price
-                volume = min(LOT_SIZE, 99 - self.position)
-                self.send_insert_order(self.bid_id, Side.BUY, new_bid_price, volume, Lifespan.GOOD_FOR_DAY)
-                self.logger.info("sent mm bid with id %d and price %d and volume %d", self.bid_id, self.bid_price, volume)
+            if new_bid_price != 0 and position + outstanding_bids_size < POSITION_LIMIT - 1 and send_new_bid:
+                bid_id = next(self.order_ids)
+                volume = min(LOT_SIZE, 99 - position - outstanding_bids_size)
+                self.send_insert_order(bid_id, Side.BUY, new_bid_price, volume, Lifespan.GOOD_FOR_DAY)
+                self.logger.info("sent mm bid with id %d and price %d and volume %d", bid_id, new_bid_price, volume)
                 # self.logger.info("current outstanding bid size %d", outstanding_bids_size)
-                self.bids[self.bid_id] = [self.bid_price, volume]
+                self.bids[bid_id] = [new_bid_price, volume]
 
-            if new_ask_price != 0 and self.position - outstanding_asks_size > -POSITION_LIMIT + 1 and send_new_ask:
-                self.ask_id = next(self.order_ids)
-                self.ask_price = new_ask_price
-                volume = min(LOT_SIZE, 99 + self.position)
-                self.send_insert_order(self.ask_id, Side.SELL, new_ask_price, volume, Lifespan.GOOD_FOR_DAY)
-                self.logger.info("sent mm ask with id %d and price %d and volume %d", self.ask_id, self.ask_price, volume)
+            if new_ask_price != 0 and position - outstanding_asks_size > -POSITION_LIMIT + 1 and send_new_ask:
+                ask_id = next(self.order_ids)
+                volume = min(LOT_SIZE, 99 + position - outstanding_asks_size)
+                self.send_insert_order(ask_id, Side.SELL, new_ask_price, volume, Lifespan.GOOD_FOR_DAY)
+                self.logger.info("sent mm ask with id %d and price %d and volume %d", ask_id, new_ask_price, volume)
                 # self.logger.info("current outstanding ask size %d", outstanding_asks_size)
-                self.asks[self.ask_id] = [self.ask_price, volume]
+                self.asks[ask_id] = [new_ask_price, volume]
         
 
     def on_order_filled_message(self, client_order_id: int, price: int, volume: int) -> None:
